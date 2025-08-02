@@ -1,7 +1,3 @@
-# WXT + Svelte
+## Iwakura: Gamepad Mapper
 
-This template should help get you started developing with Svelte in WXT.
-
-## Recommended IDE Setup
-
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+Map gamepad to keys to gamepad support to web games that do not directly support it :D
