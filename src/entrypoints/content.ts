@@ -251,29 +251,49 @@ function gameLoop({ gamepad, previousGamepad: previous, context }: GameLoopConte
 function loadEventDispatcherContext(): EventDispatcherContext {
   return {
     buttonKeymap: {
-      [StandardButtonMapping.RightClusterBottomButton]: null,
-      [StandardButtonMapping.RightClusterRightButton]: null,
-      [StandardButtonMapping.RightClusterLeftButton]: null,
-      [StandardButtonMapping.RightClusterTopButton]: null,
-      [StandardButtonMapping.TopLeftButton]: null,
-      [StandardButtonMapping.TopRightButton]: null,
-      [StandardButtonMapping.BottomLeftButton]: null,
-      [StandardButtonMapping.BottomRightButton]: null,
-      [StandardButtonMapping.CenterClusterLeftButton]: null,
-      [StandardButtonMapping.CenterClusterRightButton]: null,
+      [StandardButtonMapping.RightClusterBottomButton]: {
+        key: 'z'
+      },
+      [StandardButtonMapping.RightClusterRightButton]: {
+        key: 'x'
+      },
+      [StandardButtonMapping.RightClusterLeftButton]: {
+        key: 's'
+      },
+      [StandardButtonMapping.RightClusterTopButton]: {
+        key: 'd'
+      },
+      [StandardButtonMapping.TopLeftButton]: {
+        key: 'w'
+      },
+      [StandardButtonMapping.TopRightButton]: {
+        key: 'r'
+      },
+      [StandardButtonMapping.BottomLeftButton]: {
+        key: 'e'
+      },
+      [StandardButtonMapping.BottomRightButton]: {
+        key: 't'
+      },
+      [StandardButtonMapping.CenterClusterLeftButton]: {
+        key: 'c'
+      },
+      [StandardButtonMapping.CenterClusterRightButton]: {
+        key: 'v'
+      },
       [StandardButtonMapping.LeftStickButton]: null,
       [StandardButtonMapping.RightStickButton]: null,
       [StandardButtonMapping.LeftClusterBottomButton]: {
-        key: "ArrowDown"
+        key: 'ArrowDown'
       },
       [StandardButtonMapping.LeftClusterRightButton]: {
-        key: "ArrowRight"
+        key: 'ArrowRight'
       },
       [StandardButtonMapping.LeftClusterLeftButton]: {
-        key: "ArrowLeft"
+        key: 'ArrowLeft'
       },
       [StandardButtonMapping.LeftClusterTopButton]: {
-        key: "ArrowUp"
+        key: 'ArrowUp'
       },
       [StandardButtonMapping.CenterButton]: null
     },
