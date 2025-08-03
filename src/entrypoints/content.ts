@@ -93,13 +93,28 @@ function diffGameAxesState(previous: number | null, current: number): boolean {
   return isDifferentFloat(previous, current)
 }
 
+type FauxAxesAsButtonChange = Record<keyof FauxAxesAsButton, boolean>
+
+function diffGameFauxAxesAsButtonState(previous: FauxAxesAsButton | null, current: FauxAxesAsButton): FauxAxesAsButtonChange {
+  if (previous === null) {
+    return {
+      pressed: true
+    }
+  }
+
+  return {
+    pressed: previous.pressed !== current.pressed
+  }
+}
+
 type EventDispatcherContext = {
   // whatever information is needed to dispatch the correct event
   //
   // will most probably include user configuration. but for now, will keep it
   // simple.
   buttonKeymap: Record<StandardButtonMapping, KeyboardEventInit | null>,
-  axesKeymap: Record<StandardAxesMapping, KeyboardEventInit | null>,
+  axesKeymap: Record<StandardAxesMapping, null>, // unused for now
+  axesAsButtons: true, // for now that's all that's available
 }
 
 type GameLoopContext = {
@@ -113,43 +128,95 @@ type CloneableGampepadButton = {
   readonly [index in keyof GamepadButton]: GamepadButton[index]
 }
 
+type FauxAxesAsButton = {
+  readonly pressed: boolean;
+};
+
+type FauxAxesAsButtons = Record<
+  StandardButtonMapping.LeftClusterBottomButton |
+  StandardButtonMapping.LeftClusterLeftButton |
+  StandardButtonMapping.LeftClusterRightButton |
+  StandardButtonMapping.LeftClusterTopButton,
+  FauxAxesAsButton
+>;
+
 type CloneableGamepad = {
   readonly buttons: CloneableGampepadButton[],
   readonly axes: Gamepad["axes"]
+  readonly fauxAxesAsButtons: FauxAxesAsButtons
 }
 
-function cloneGamepad(gamepad: Gamepad): CloneableGamepad {
+function cloneGamepad(gamepad: Gamepad, fauxAxesAsButtons: FauxAxesAsButtons): CloneableGamepad {
   const buttons: CloneableGampepadButton[] = gamepad.buttons.map(({ pressed, touched, value }) => ({
     pressed, touched, value
   }))
 
   const axes = structuredClone(gamepad.axes);
 
-  return { buttons, axes }
+  return { buttons, axes, fauxAxesAsButtons }
+}
+
+function computeFauxAxesAsButtons(gamepad: Gamepad): FauxAxesAsButtons {
+  // we define a ring thats inset the joysticks. if the joystick is inside that
+  // ring, it will be considered as being pressed, otherwise not
+  const RING_WIDTH = 0.15 // [0, 1]
+  const vertical = gamepad.axes[StandardAxesMapping.LeftStickVertical];
+  const top = vertical < (-1 + RING_WIDTH);
+  const bottom = vertical > (1 - RING_WIDTH);
+
+  const horizontal = gamepad.axes[StandardAxesMapping.LeftStickHorizontal];
+  const left = horizontal < (-1 + RING_WIDTH);
+  const right = horizontal > (1 - RING_WIDTH);
+
+  return {
+    [StandardButtonMapping.LeftClusterTopButton]: {
+      pressed: top
+    },
+    [StandardButtonMapping.LeftClusterBottomButton]: {
+      pressed: bottom
+    },
+    [StandardButtonMapping.LeftClusterLeftButton]: {
+      pressed: left
+    },
+    [StandardButtonMapping.LeftClusterRightButton]: {
+      pressed: right
+    }
+  }
 }
 
 function gameLoop({ gamepad, previousGamepad: previous, context }: GameLoopContext) {
-  const current = cloneGamepad(gamepad)
+  const fauxAxesAsButtons = computeFauxAxesAsButtons(gamepad)
+  const current = cloneGamepad(gamepad, fauxAxesAsButtons)
   // we request early to make sure we dont end up missing the next animation
   // frame while processing
   // 
-  // since we will be throwing out lots of dom events, it might make more sense
-  // to request animation frame _after_ events are dispatched
+  // tho, since we will be throwing out lots of dom events, it might make more
+  // sense to request animation frame _after_ events are dispatched
   requestAnimationFrame(time => gameLoop({ gamepad, previousGamepad: current, time, context }))
 
   // - [x] map game button to key
   // - [x] map axes to direction
   // - [x] use diffing to find what has changed since the last iteration
-  // - [ ] use threshold for axes to register as change
-  // - [ ] for every change, trigger an event on window
+  // - [x] use threshold for axes to register as change
+  // - [x] for every change, trigger an event on window
 
   const buttonChanges = previous?.buttons?.map((previous, idx) => diffGameButtonState(previous ?? null, current.buttons[idx])) ?? null
-  const axesChnages = previous?.axes?.map((previous, idx) => diffGameAxesState(previous ?? null, current.axes[idx])) ?? null
 
-  if (buttonChanges === null || axesChnages === null) {
+  // ugly code but meh
+  const fauxAxesAsButtonsChanges: [keyof FauxAxesAsButtons, FauxAxesAsButtonChange][] | null = (previous && ([
+    StandardButtonMapping.LeftClusterBottomButton,
+    StandardButtonMapping.LeftClusterLeftButton,
+    StandardButtonMapping.LeftClusterRightButton,
+    StandardButtonMapping.LeftClusterTopButton
+  ] as const).map(key => {
+    return [key, diffGameFauxAxesAsButtonState(previous?.fauxAxesAsButtons[key] ?? null, fauxAxesAsButtons[key])]
+  })) ?? null
+
+  if (buttonChanges === null || fauxAxesAsButtonsChanges === null) {
     // most probably the very first iteration
-    // dropping for now, but decide if it makes sense to handle the case where the user keeps holding the button until the second iteration
-    // which will cause a keyup event to be dispatched before a keydown event
+    // dropping for now, but decide if it makes sense to handle the case where
+    // the user keeps holding the button until the second iteration which will
+    // cause a keyup event to be dispatched before a keydown event
     return
   }
 
@@ -160,7 +227,20 @@ function gameLoop({ gamepad, previousGamepad: previous, context }: GameLoopConte
       return
     }
 
-    const eventType = gamepad.buttons[button].pressed ? "keypress" : "keydown"
+    const eventType = gamepad.buttons[button].pressed ? "keydown" : "keyup"
+
+    const event = new KeyboardEvent(eventType, eventInitDict)
+
+    window.dispatchEvent(event)
+  })
+
+  fauxAxesAsButtonsChanges.forEach(([key, { pressed: pressedStateChanged }]) => {
+    const eventInitDict = context.buttonKeymap[key]
+    if (!pressedStateChanged || eventInitDict === null) {
+      return
+    }
+
+    const eventType = fauxAxesAsButtons[key].pressed ? "keydown" : "keyup"
 
     const event = new KeyboardEvent(eventType, eventInitDict)
 
@@ -193,7 +273,7 @@ function loadEventDispatcherContext(): EventDispatcherContext {
         key: "ArrowLeft"
       },
       [StandardButtonMapping.LeftClusterTopButton]: {
-        key: "ArrowTop"
+        key: "ArrowUp"
       },
       [StandardButtonMapping.CenterButton]: null
     },
@@ -202,7 +282,8 @@ function loadEventDispatcherContext(): EventDispatcherContext {
       [StandardAxesMapping.LeftStickVertical]: null,
       [StandardAxesMapping.RightStickHorizontal]: null,
       [StandardAxesMapping.RightStickVertical]: null
-    }
+    },
+    axesAsButtons: true
   }
 }
 
