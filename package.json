@@ -1,6 +1,6 @@
 {
   "name": "Iwakura: Gamepad Mapper",
-  "description": "Map gamepad to keys to gamepad support to web games that do not directly support it :D",
+  "description": "Map gamepad to keys and add gamepad support to web games that do not directly support it :D",
   "private": false,
   "version": "0.1.0",
   "type": "module",
