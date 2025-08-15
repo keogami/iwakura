@@ -1,6 +1,7 @@
 <script lang="ts">
   import { writable } from "svelte/store";
   import { storage } from "@wxt-dev/storage";
+  import Button from "./components/ui/button/button.svelte";
 
   let count = writable(0);
 
@@ -17,6 +18,6 @@
   }
 </script>
 
-<button on:click={increment}>
+<Button onclick={increment}>
   count is {$count}
-</button>
+</Button>

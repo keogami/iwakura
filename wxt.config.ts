@@ -8,7 +8,8 @@ export default defineConfig({
     plugins: [tailwindcss()],
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "./"), // or "./src" if using src directory
+        "@": path.resolve(__dirname, "./"),
+        "$lib": path.resolve(__dirname, "./src/lib")
       },
     },
   }) as WxtViteConfig,
