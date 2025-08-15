@@ -1,10 +1,22 @@
 <script lang="ts">
-  let count: number = 0
-  const increment = () => {
-    count += 1
+  import { writable } from "svelte/store";
+  import { storage } from "@wxt-dev/storage";
+
+  let count = writable(0);
+
+  storage.getItem("local:counter").then((value) => {
+    $count = Number(value);
+  });
+
+  storage.watch("local:counter", (currentValue) => {
+    $count = Number(currentValue);
+  });
+
+  async function increment() {
+    await storage.setItem("local:counter", $count + 1);
   }
 </script>
 
 <button on:click={increment}>
-  count is {count}
+  count is {$count}
 </button>
