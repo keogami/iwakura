@@ -4,6 +4,7 @@
   import { mockMappings, mockMappingsList } from "$lib/store";
   import { Plus } from "@lucide/svelte";
   import ScrollArea from "$lib/components/ui/scroll-area/scroll-area.svelte";
+  import { cn } from "$lib/utils";
 
   let selectedMappingUuid = $state<string | null>(null);
   let selectedMapping = $derived(
@@ -17,10 +18,13 @@
   }
 </script>
 
-{#snippet listItem(name: string, uuid: string)}
+{#snippet listItem(name: string, uuid: string, selected: boolean)}
   <Button
-    variant="outline"
-    class="cursor-pointer w-full justify-start rounded"
+    variant={selected ? "default" : "outline"}
+    class={cn(
+      "cursor-pointer w-full justify-start rounded border",
+      selected && "border border-primary",
+    )}
     onclick={() => selectMapping(uuid)}
   >
     <p class="truncate">{name}</p>
@@ -41,7 +45,7 @@
           <ScrollArea class="mapping-list">
             <div class="flex flex-col gap-2 my-4">
               {#each mockMappingsList as { name, uuid }}
-                {@render listItem(name, uuid)}
+                {@render listItem(name, uuid, selectedMappingUuid === uuid)}
               {/each}
             </div>
           </ScrollArea>
