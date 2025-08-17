@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from "./components/ui/button/button.svelte";
   import { currentComponent } from "./router";
-  let Component = $currentComponent;
+  let Component = $derived($currentComponent);
 </script>
 
 {#if $currentComponent}
