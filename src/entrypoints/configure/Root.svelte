@@ -5,7 +5,13 @@
   import { Plus } from "@lucide/svelte";
   import ScrollArea from "$lib/components/ui/scroll-area/scroll-area.svelte";
   import { cn } from "$lib/utils";
+  import { v7 } from "uuid";
+  import { derived as derivedStore, writable } from "svelte/store";
 
+  let mappings = writable(mockMappings);
+  let mappingsList = derivedStore(mappings, (mappings) => [
+    ...mappings.entries().map(([uuid, { name }]) => ({ uuid, name })),
+  ]);
   let selectedMappingUuid = $state<string | null>(null);
   let selectedMapping = $derived(
     selectedMappingUuid === null
@@ -15,6 +21,18 @@
 
   function selectMapping(uuid: string) {
     selectedMappingUuid = uuid;
+  }
+
+  function createMapping() {
+    mappings.update((mappings) => {
+      mappings.set(v7(), {
+        name: "auto created",
+        url: "http://asdfa",
+        mappings: [],
+      });
+
+      return mappings;
+    });
   }
 </script>
 
@@ -36,15 +54,19 @@
     <Resizable.Pane defaultSize={25}>
       <div class="sidebar px-4">
         <div class="sidebar-header">
-          <Button class="rounded cursor-pointer w-full" size="lg">
+          <Button
+            class="rounded cursor-pointer w-full"
+            size="lg"
+            onclick={() => createMapping()}
+          >
             <Plus />
             <span>Create Mapping</span>
           </Button>
         </div>
-        {#if mockMappingsList.length > 0}
+        {#if $mappingsList.length > 0}
           <ScrollArea class="mapping-list">
             <div class="flex flex-col gap-2 my-4">
-              {#each mockMappingsList as { name, uuid }}
+              {#each $mappingsList as { name, uuid }}
                 {@render listItem(name, uuid, selectedMappingUuid === uuid)}
               {/each}
             </div>
