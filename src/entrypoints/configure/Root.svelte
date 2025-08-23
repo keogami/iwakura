@@ -1,21 +1,16 @@
 <script lang="ts">
   import * as Resizable from "$lib/components/ui/resizable/index";
   import Button from "$lib/components/ui/button/button.svelte";
-  import {
-    isValidUrlPattern,
-    mockMappings,
-    mockMappingsList,
-    type Mapping,
-  } from "$lib/store";
+  import { isValidUrlPattern, mockMappings, type Mapping } from "$lib/store";
   import { Plus } from "@lucide/svelte";
   import ScrollArea from "$lib/components/ui/scroll-area/scroll-area.svelte";
   import { cn } from "$lib/utils";
   import { v7 } from "uuid";
   import { derived as derivedStore, writable } from "svelte/store";
-  import SidebarMenuButton from "$lib/components/ui/sidebar/sidebar-menu-button.svelte";
   import Switch from "$lib/components/ui/switch/switch.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
+  import ButtonMapper from "$lib/ButtonMapper.svelte";
 
   let mappings = writable(mockMappings);
   let mappingsList = derivedStore(mappings, (mappings) => [
@@ -104,6 +99,8 @@
 
     delta = {};
   }
+
+  let canListen = $state(true);
 </script>
 
 {#snippet listItem(name: string, uuid: string, selected: boolean)}
@@ -119,12 +116,18 @@
   </Button>
 {/snippet}
 
-{#snippet mapper(label: string)}
-  <Button class="rounded" size="sm" variant="secondary">{label}</Button>
+{#snippet mapper(label: string, mappedTo: string | null)}
+  <ButtonMapper
+    {canListen}
+    {mappedTo}
+    {label}
+    onListeningChange={(listening) => (canListen = !listening)}
+    onMappingChange={(key) => console.log(label, key)}
+  />
 {/snippet}
 
 {#snippet mappingInput(mapping: Mapping)}
-  <div class="flex flex-col mx-4 gap-4">
+  <div class="flex flex-col mx-4 gap-6">
     <section id="header" class="flex justify-between">
       <h1 class="self-center">{mapping.name}</h1>
       <div class="flex gap-4">
@@ -168,11 +171,23 @@
         </p>
       </div>
     </section>
-    <section class="gamepad-mapping">
-      <section>
+    <section class="gamepad-mapping flex flex-col gap-4">
+      <section class="flex flex-col gap-2">
         <h2>Left Button Cluster</h2>
-        <div>
-          {@render mapper("Top Button")}
+        <div class="grid grid-cols-2 gap-4">
+          {@render mapper("Top Button", null)}
+          {@render mapper("Bottom Button", null)}
+          {@render mapper("Left Button", null)}
+          {@render mapper("Right Button", null)}
+        </div>
+      </section>
+      <section class="flex flex-col gap-2">
+        <h2>Right Button Cluster</h2>
+        <div class="grid grid-cols-2 gap-4">
+          {@render mapper("Top Button", null)}
+          {@render mapper("Bottom Button", null)}
+          {@render mapper("Left Button", null)}
+          {@render mapper("Right Button", null)}
         </div>
       </section>
     </section>
