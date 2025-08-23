@@ -74,6 +74,10 @@
   }
 
   function stageUrlToDelta(url: string) {
+    if (urlIsInvalid === null || urlIsInvalid) {
+      return;
+    }
+
     if (selectedMapping !== null && url === selectedMapping.url) {
       delete delta.url;
       return;
@@ -140,7 +144,7 @@
         </div>
         <Button
           onclick={() => saveChangesForCurrent()}
-          disabled={!hasChanges}
+          disabled={!hasChanges || urlIsInvalid === true}
           class="rounded cursor-pointer">Save Changes</Button
         >
       </div>
