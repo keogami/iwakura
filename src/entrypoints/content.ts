@@ -1,3 +1,5 @@
+import { StandardAxesMapping, StandardButton, Triggers } from "$lib/store";
+
 export default defineContentScript({
   matches: ['<all_urls>'],
   main() {
@@ -30,45 +32,6 @@ export default defineContentScript({
     })
   },
 });
-
-// The "standard" mapping for buttons from the gamepad api standard
-// ref: https://w3c.github.io/gamepad/#remapping
-enum StandardButtonMapping {
-  RightClusterBottomButton = 0,
-  RightClusterRightButton,
-  RightClusterLeftButton,
-  RightClusterTopButton,
-  TopLeftButton,
-  TopRightButton,
-  BottomLeftButton,
-  BottomRightButton,
-  CenterClusterLeftButton,
-  CenterClusterRightButton,
-  LeftStickButton,
-  RightStickButton,
-  LeftClusterTopButton,
-  LeftClusterBottomButton,
-  LeftClusterLeftButton,
-  LeftClusterRightButton,
-  CenterButton,
-}
-
-// The "standard" mapping for buttons from the gamepad api standard
-// ref: https://w3c.github.io/gamepad/#remapping
-enum StandardAxesMapping {
-  LeftStickHorizontal = 0,
-  LeftStickVertical,
-  RightStickHorizontal,
-  RightStickVertical,
-}
-
-// The standard doesn't talk about xbox triggers, but firefox has added them as axes
-// ref: https://luser.github.io/gamepadtest/
-//      https://bugzilla.mozilla.org/show_bug.cgi?id=1434408
-enum Triggers {
-  Left = 4,
-  Right
-}
 
 type TriggerButton = {
   readonly pressed: boolean
@@ -149,7 +112,7 @@ type EventDispatcherContext = {
   //
   // will most probably include user configuration. but for now, will keep it
   // simple.
-  buttonKeymap: Record<StandardButtonMapping, KeyboardEventInit | null>,
+  buttonKeymap: Record<StandardButton, KeyboardEventInit | null>,
   axesKeymap: Record<StandardAxesMapping, null>, // unused for now
   triggerKeymap: Record<Triggers, KeyboardEventInit | null>
   axesAsButtons: true, // for now that's all that's available
@@ -171,10 +134,10 @@ type FauxAxesAsButton = {
 };
 
 type FauxAxesAsButtons = Record<
-  StandardButtonMapping.LeftClusterBottomButton |
-  StandardButtonMapping.LeftClusterLeftButton |
-  StandardButtonMapping.LeftClusterRightButton |
-  StandardButtonMapping.LeftClusterTopButton,
+  StandardButton.LeftClusterBottomButton |
+  StandardButton.LeftClusterLeftButton |
+  StandardButton.LeftClusterRightButton |
+  StandardButton.LeftClusterTopButton,
   FauxAxesAsButton
 >;
 
@@ -207,16 +170,16 @@ function computeFauxAxesAsButtons(gamepad: Gamepad): FauxAxesAsButtons {
   const right = horizontal > (1 - RING_WIDTH);
 
   return {
-    [StandardButtonMapping.LeftClusterTopButton]: {
+    [StandardButton.LeftClusterTopButton]: {
       pressed: top
     },
-    [StandardButtonMapping.LeftClusterBottomButton]: {
+    [StandardButton.LeftClusterBottomButton]: {
       pressed: bottom
     },
-    [StandardButtonMapping.LeftClusterLeftButton]: {
+    [StandardButton.LeftClusterLeftButton]: {
       pressed: left
     },
-    [StandardButtonMapping.LeftClusterRightButton]: {
+    [StandardButton.LeftClusterRightButton]: {
       pressed: right
     }
   }
@@ -247,10 +210,10 @@ function gameLoop({ gamepad, previousGamepad: previous, context }: GameLoopConte
 
   // ugly code but meh
   const fauxAxesAsButtonsChanges: [keyof FauxAxesAsButtons, FauxAxesAsButtonChange][] | null = (previous && ([
-    StandardButtonMapping.LeftClusterBottomButton,
-    StandardButtonMapping.LeftClusterLeftButton,
-    StandardButtonMapping.LeftClusterRightButton,
-    StandardButtonMapping.LeftClusterTopButton
+    StandardButton.LeftClusterBottomButton,
+    StandardButton.LeftClusterLeftButton,
+    StandardButton.LeftClusterRightButton,
+    StandardButton.LeftClusterTopButton
   ] as const).map(key => {
     return [key, diffGameFauxAxesAsButtonState(previous?.fauxAxesAsButtons[key], fauxAxesAsButtons[key])]
   }))
@@ -259,7 +222,7 @@ function gameLoop({ gamepad, previousGamepad: previous, context }: GameLoopConte
   const triggerButtonsChanges: [Triggers, TriggerButtonChange][] = ([Triggers.Left, Triggers.Right] as const).map(key => [key, diffTriggerButtons(previousTriggerButtons[key], triggerButtons[key])])
 
   buttonChanges.forEach(({ pressed: pressedStateChanged }, idx) => {
-    const button: StandardButtonMapping = idx; // pinky promise, type shi
+    const button: StandardButton = idx; // pinky promise, type shi
     const eventInitDict = context.buttonKeymap[button]
     if (!pressedStateChanged || eventInitDict === null) {
       return
@@ -302,47 +265,47 @@ function gameLoop({ gamepad, previousGamepad: previous, context }: GameLoopConte
 function loadEventDispatcherContext(): EventDispatcherContext {
   return {
     buttonKeymap: {
-      [StandardButtonMapping.RightClusterBottomButton]: {
+      [StandardButton.RightClusterBottomButton]: {
         key: 'z'
       },
-      [StandardButtonMapping.RightClusterRightButton]: {
+      [StandardButton.RightClusterRightButton]: {
         key: 'x'
       },
-      [StandardButtonMapping.RightClusterLeftButton]: {
+      [StandardButton.RightClusterLeftButton]: {
         key: 's'
       },
-      [StandardButtonMapping.RightClusterTopButton]: {
+      [StandardButton.RightClusterTopButton]: {
         key: 'd'
       },
-      [StandardButtonMapping.TopLeftButton]: {
+      [StandardButton.TopLeftButton]: {
         key: 'w'
       },
-      [StandardButtonMapping.TopRightButton]: {
+      [StandardButton.TopRightButton]: {
         key: 'r'
       },
-      [StandardButtonMapping.BottomLeftButton]: null,
-      [StandardButtonMapping.BottomRightButton]: null,
-      [StandardButtonMapping.CenterClusterLeftButton]: {
+      [StandardButton.BottomLeftButton]: null,
+      [StandardButton.BottomRightButton]: null,
+      [StandardButton.CenterClusterLeftButton]: {
         key: 'c'
       },
-      [StandardButtonMapping.CenterClusterRightButton]: {
+      [StandardButton.CenterClusterRightButton]: {
         key: 'v'
       },
-      [StandardButtonMapping.LeftStickButton]: null,
-      [StandardButtonMapping.RightStickButton]: null,
-      [StandardButtonMapping.LeftClusterBottomButton]: {
+      [StandardButton.LeftStickButton]: null,
+      [StandardButton.RightStickButton]: null,
+      [StandardButton.LeftClusterBottomButton]: {
         key: 'ArrowDown'
       },
-      [StandardButtonMapping.LeftClusterRightButton]: {
+      [StandardButton.LeftClusterRightButton]: {
         key: 'ArrowRight'
       },
-      [StandardButtonMapping.LeftClusterLeftButton]: {
+      [StandardButton.LeftClusterLeftButton]: {
         key: 'ArrowLeft'
       },
-      [StandardButtonMapping.LeftClusterTopButton]: {
+      [StandardButton.LeftClusterTopButton]: {
         key: 'ArrowUp'
       },
-      [StandardButtonMapping.CenterButton]: null
+      [StandardButton.CenterButton]: null
     },
     axesKeymap: {
       [StandardAxesMapping.LeftStickHorizontal]: null,
