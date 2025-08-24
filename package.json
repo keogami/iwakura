@@ -30,6 +30,7 @@
     "wxt": "^0.20.6"
   },
   "dependencies": {
+    "@fontsource/fira-mono": "^5.2.6",
     "@fontsource/inter": "^5.2.6",
     "@tailwindcss/vite": "^4.1.12",
     "@wxt-dev/storage": "^1.1.1",

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@fontsource/fira-mono':
+        specifier: ^5.2.6
+        version: 5.2.6
       '@fontsource/inter':
         specifier: ^5.2.6
         version: 5.2.6
@@ -287,6 +290,9 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@fontsource/fira-mono@5.2.6':
+    resolution: {integrity: sha512-6pyiGeFH+5DP5sICSwx5wu+9BlTEMTKki7bTppsEqXJysi1MiK82n6oSUaYkQWRLH51+DK7zv2JJsi82cOIS3g==}
 
   '@fontsource/inter@5.2.6':
     resolution: {integrity: sha512-CZs9S1CrjD0jPwsNy9W6j0BhsmRSQrgwlTNkgQXTsAeDRM42LBRLo3eo9gCzfH4GvV7zpyf78Ozfl773826csw==}
@@ -2449,6 +2455,8 @@ snapshots:
       '@floating-ui/utils': 0.2.10
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@fontsource/fira-mono@5.2.6': {}
 
   '@fontsource/inter@5.2.6': {}
 

@@ -7,6 +7,7 @@
 @import '@fontsource/inter/400.css';
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';
+@import '@fontsource/fira-mono/400.css';
 
 :root {
   --background: oklch(0.1244 0.0170 151.3039);
@@ -43,7 +44,7 @@
   --sidebar-ring: oklch(0.7583 0.2464 141.8751);
   --font-sans: Inter;
   --font-serif: serif;
-  --font-mono: monospace;
+  --font-mono: "Fira Mono" monospace;
   --radius: 0.1rem;
   --shadow-2xs: 0px 2px 4px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0px 2px 4px 0px hsl(0 0% 0% / 0.05);

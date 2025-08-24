@@ -3,6 +3,21 @@
   import { Button, type ButtonVariant } from "./components/ui/button";
   import { cn } from "./utils";
 
+  function keyToLabel(key: string): string {
+    if (key === " ") {
+      // special case for space
+      return "<space>";
+    }
+
+    if (key.length === 1) {
+      // most probably a character like `a` or `1`
+      return key;
+    }
+
+    // probably something like `Backspace` or `Enter`
+    return `<${key}>`;
+  }
+
   let {
     label,
     mappedTo = $bindable(null),
@@ -28,7 +43,7 @@
       return "";
     }
 
-    return mappedTo;
+    return keyToLabel(mappedTo);
   });
 
   function startListening() {
@@ -97,7 +112,7 @@
       id="button-mapper"
       data-listening={listening.toString()}
       onclick={startListening}
-      class={cn("duration-300 rounded cursor-pointer", myClass)}
+      class={cn("duration-300 rounded cursor-pointer uppercase", myClass)}
       size="sm"
       {variant}>{text}</Button
     >
@@ -127,5 +142,10 @@
 
   #pinger {
     animation-duration: 1.5s !important;
+  }
+
+  /* work around to i dont even fucking know what */
+  :global #button-mapper {
+    font-family: "Fira Mono";
   }
 </style>
